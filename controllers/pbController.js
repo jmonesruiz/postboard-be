@@ -9,22 +9,16 @@ async function genSecretCode() {
 		.findByIdAndUpdate("pbSecretCode", { $inc: { counter: 1 } })
 		.then(async (result) => {
 			if (!result) {
-				console.log("camino1");
 				await secretCodeModel.create({ _id: "pbSecretCode", counter: 1 });
 				return Promise.resolve({ _id: "pbSecretCode", counter: 0 });
 			} else {
-				console.log("camino2");
-				console.log(result);
 				return Promise.resolve(result);
 			}
 		})
 		.then((result) => {
-			console.log("camino1a");
-			console.log(result);
 			return result.counter;
 		})
 		.catch((err) => {
-			console.log("camino3");
 			throw err;
 		});
 }
@@ -40,7 +34,6 @@ module.exports.createPostboard = (req, res) => {
 	if (req.body.name && req.body.creatorId) {
 		genSecretCode()
 			.then((newSecretCode) => {
-				console.log("holi" + newSecretCode);
 				return pbModel.create({
 					name: req.body.name,
 					secretCode: newSecretCode,
@@ -70,8 +63,8 @@ module.exports.findPostboard = (req, res) => {
 		pbModel
 			.find({ secretCode: req.params.secretcode })
 			.then((result) => {
-				if (!result) sendJsonResponse(res, 404, { message: "Postboard not found" });
-				else sendJsonResponse(res, 200, result);
+				if (!result[0]) sendJsonResponse(res, 404, { message: "Postboard not found" });
+				else sendJsonResponse(res, 200, { _id: result[0]._id });
 			})
 			.catch((err) => sendJsonResponse(res, 400, err));
 	} else sendJsonResponse(res, 404, { message: "No ID in request" });
